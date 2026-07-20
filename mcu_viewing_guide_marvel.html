@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCU Mission Map — Assemble Before Doomsday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Barlow:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#E62429;
+    --red-dark:#8F1218;
+    --gold:#F0B323;
+    --doom:#2FBF71;
+    --doom-dark:#0F5132;
+    --ink:#0A0C14;
+    --panel:#151A2C;
+    --panel-hi:#1C2238;
+    --line:#2A3150;
+    --text:#F5F2E8;
+    --dim:#9BA0B5;
+    --cleared:#2FBF71;
+    --slate:#6E7590;
+    --st-power:#A44FE0; --st-space:#3E8EF0; --st-reality:#E63946;
+    --st-soul:#F08A24;  --st-time:#2FBF71;  --st-mind:#F5D437;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(900px 500px at 85% -5%, rgba(230,36,41,0.10), transparent 60%),
+      radial-gradient(700px 400px at 8% 30%, rgba(62,142,240,0.06), transparent 60%),
+      var(--ink);
+    color:var(--text);
+    font-family:'Barlow', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .bangers{font-family:'Bangers', cursive; letter-spacing:0.045em;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  h1,h2,h3{margin:0;}
+  button{font-family:inherit;}
+  ::selection{background:var(--red); color:#fff;}
+
+  /* ============ SPLASH ============ */
+  #splash{
+    position:fixed; inset:0; z-index:300; background:#000;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem;
+    cursor:pointer; animation:splashOut 0.7s ease 2.4s forwards;
+  }
+  #splash .flick{
+    font-family:'Bangers'; font-size:clamp(4rem, 18vw, 11rem); color:var(--red);
+    letter-spacing:0.08em; display:flex; text-shadow:0 0 30px rgba(230,36,41,0.55);
+  }
+  #splash .flick span{opacity:0; animation:letterIn 0.45s ease forwards;}
+  #splash .flick span:nth-child(1){animation-delay:0.12s;}
+  #splash .flick span:nth-child(2){animation-delay:0.28s;}
+  #splash .flick span:nth-child(3){animation-delay:0.44s;}
+  #splash .sub-line{
+    font-family:'JetBrains Mono'; font-size:0.72rem; letter-spacing:0.5em; color:#fff;
+    opacity:0; animation:fadeIn 0.6s ease 0.9s forwards; text-transform:uppercase;
+  }
+  #splash .skip{position:absolute; bottom:1.4rem; font-family:'JetBrains Mono'; font-size:0.6rem; letter-spacing:0.2em; color:#555;}
+  @keyframes letterIn{0%{opacity:0; transform:scale(2.6); filter:blur(8px);} 60%{opacity:1; transform:scale(0.94); filter:blur(0);} 100%{opacity:1; transform:scale(1);}}
+  @keyframes fadeIn{to{opacity:1;}}
+  @keyframes splashOut{to{opacity:0; visibility:hidden;}}
+  #splash.done{opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s;}
+
+  /* ============ HERO ============ */
+  .hero{
+    position:relative; overflow:hidden;
+    padding:4.2rem 1.5rem 3.2rem;
+    border-bottom:4px solid var(--red);
+    background:
+      radial-gradient(1100px 520px at 50% -15%, rgba(230,36,41,0.22), transparent 62%),
+      linear-gradient(180deg, #12060a, var(--ink) 75%);
+  }
+  .halftone{
+    position:absolute; inset:-40px; pointer-events:none; opacity:0.4;
+    background-image:radial-gradient(rgba(230,36,41,0.35) 1.2px, transparent 1.7px);
+    background-size:16px 16px;
+    animation:drift 26s linear infinite;
+  }
+  @keyframes drift{from{background-position:0 0;} to{background-position:160px 96px;}}
+  .burst-word{
+    position:absolute; font-family:'Bangers'; color:transparent;
+    -webkit-text-stroke:1.5px rgba(240,179,35,0.35);
+    font-size:2.2rem; pointer-events:none; user-select:none;
+    animation:floaty 7s ease-in-out infinite;
+  }
+  .burst-word.b1{top:12%; left:6%; transform:rotate(-12deg);}
+  .burst-word.b2{top:22%; right:7%; transform:rotate(9deg); animation-delay:1.4s; -webkit-text-stroke-color:rgba(230,36,41,0.4);}
+  .burst-word.b3{bottom:14%; left:11%; transform:rotate(6deg); animation-delay:2.6s; -webkit-text-stroke-color:rgba(62,142,240,0.35);}
+  .burst-word.b4{bottom:24%; right:12%; transform:rotate(-8deg); animation-delay:3.4s;}
+  @keyframes floaty{0%,100%{translate:0 0;} 50%{translate:0 -14px;}}
+  @media(max-width:760px){.burst-word{display:none;}}
+
+  .hero-inner{max-width:1120px; margin:0 auto; position:relative; z-index:2; text-align:center;}
+  .marvel-plate{
+    display:inline-block; background:var(--red); color:#fff;
+    font-family:'Bangers'; font-size:1.05rem; letter-spacing:0.22em;
+    padding:0.32rem 1.1rem 0.22rem; transform:skew(-8deg);
+    box-shadow:4px 4px 0 rgba(0,0,0,0.55);
+  }
+  .marvel-plate span{display:inline-block; transform:skew(8deg);}
+  .hero h1{
+    font-family:'Bangers'; font-size:clamp(2.8rem, 9vw, 6rem);
+    line-height:0.95; margin-top:1.1rem; color:#fff;
+    text-shadow:3px 3px 0 var(--red-dark), 6px 6px 0 rgba(0,0,0,0.5);
+    position:relative; display:inline-block;
+  }
+  .hero h1 em{font-style:normal; color:var(--gold); text-shadow:3px 3px 0 #7a5300, 6px 6px 0 rgba(0,0,0,0.5);}
+  .hero h1::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.35) 50%, transparent 65%);
+    background-size:250% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    animation:shine 5s ease-in-out infinite; pointer-events:none;
+  }
+  @keyframes shine{0%,20%{background-position:120% 0;} 60%,100%{background-position:-120% 0;}}
+  .hero p.sub{max-width:680px; margin:1.2rem auto 0; color:var(--dim); font-size:1.02rem;}
+  .hero p.sub b{color:var(--text);}
+
+  .stones{display:flex; justify-content:center; gap:0.9rem; margin-top:1.5rem;}
+  .stone{width:15px; height:15px; border-radius:50%; position:relative; cursor:default; animation:stoneGlow 3.6s ease-in-out infinite;}
+  .stone::after{
+    content:attr(data-name); position:absolute; bottom:150%; left:50%; transform:translateX(-50%) scale(0.8);
+    font-family:'JetBrains Mono'; font-size:0.58rem; letter-spacing:0.12em; color:var(--text);
+    background:#000; border:1px solid var(--line); padding:0.2rem 0.5rem; border-radius:4px;
+    opacity:0; transition:all 0.18s ease; pointer-events:none; white-space:nowrap;
+  }
+  .stone:hover::after{opacity:1; transform:translateX(-50%) scale(1);}
+  .stone.s1{background:var(--st-power); color:var(--st-power);}
+  .stone.s2{background:var(--st-space); color:var(--st-space); animation-delay:0.6s;}
+  .stone.s3{background:var(--st-reality); color:var(--st-reality); animation-delay:1.2s;}
+  .stone.s4{background:var(--st-soul); color:var(--st-soul); animation-delay:1.8s;}
+  .stone.s5{background:var(--st-time); color:var(--st-time); animation-delay:2.4s;}
+  .stone.s6{background:var(--st-mind); color:var(--st-mind); animation-delay:3.0s;}
+  @keyframes stoneGlow{0%,100%{box-shadow:0 0 4px 0 currentColor; filter:brightness(0.85);} 50%{box-shadow:0 0 16px 3px currentColor; filter:brightness(1.35);}}
+
+  /* ============ MISSION PICKER ============ */
+  .op-picker{display:grid; grid-template-columns:1fr 1fr; gap:1.6rem; max-width:920px; margin:2.6rem auto 0;}
+  @media(max-width:680px){.op-picker{grid-template-columns:1fr;}}
+  .op-card{
+    position:relative; text-align:left; cursor:pointer; overflow:hidden;
+    border:3px solid #000; border-radius:6px; padding:1.5rem 1.4rem 1.4rem;
+    transition:transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .op-card.bnd{background:linear-gradient(160deg, #2b0a0e, #170a12 70%); box-shadow:8px 8px 0 rgba(230,36,41,0.35);}
+  .op-card.dd{background:linear-gradient(160deg, #06231a, #0a1414 70%); box-shadow:8px 8px 0 rgba(47,191,113,0.3);}
+  .op-card:hover{transform:translateY(-6px) rotate(-0.5deg);}
+  .op-card.bnd:hover{box-shadow:12px 14px 0 rgba(230,36,41,0.45);}
+  .op-card.dd:hover{box-shadow:12px 14px 0 rgba(47,191,113,0.4);}
+  .op-card:focus-visible{outline:3px solid #fff; outline-offset:3px;}
+  .cover-dots{
+    position:absolute; inset:0; opacity:0.25; pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1.4px);
+    background-size:12px 12px;
+    mask-image:linear-gradient(200deg, #000, transparent 55%);
+    -webkit-mask-image:linear-gradient(200deg, #000, transparent 55%);
+  }
+  .issue-box{
+    position:absolute; top:0.8rem; right:0.8rem; border:2px solid #000; background:#fff; color:#000;
+    font-family:'Bangers'; font-size:0.72rem; letter-spacing:0.08em;
+    padding:0.18rem 0.5rem; line-height:1.25; text-align:center;
+    transform:rotate(3deg); box-shadow:2px 2px 0 rgba(0,0,0,0.6);
+  }
+  .op-card .op-num{font-family:'JetBrains Mono'; font-size:0.62rem; letter-spacing:0.28em; color:var(--dim);}
+  .op-card h2{font-family:'Bangers'; font-size:2rem; margin-top:0.45rem; color:#fff; line-height:1;}
+  .op-card.bnd h2{text-shadow:2.5px 2.5px 0 var(--red-dark);}
+  .op-card.dd h2{text-shadow:2.5px 2.5px 0 var(--doom-dark);}
+  .op-card .op-date{font-family:'JetBrains Mono'; font-size:0.7rem; color:var(--dim); margin-top:0.4rem;}
+  .op-card-bottom{display:flex; align-items:center; justify-content:space-between; margin-top:1.3rem;}
+  .countdown{font-family:'Bangers'; font-size:1.85rem; animation:pulse 2.4s ease-in-out infinite;}
+  .op-card.bnd .countdown{color:var(--red);}
+  .op-card.dd .countdown{color:var(--doom);}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:0.65;}}
+  .cd-label{font-family:'JetBrains Mono'; font-size:0.56rem; letter-spacing:0.2em; color:var(--dim); display:block; margin-top:-0.15rem;}
+  .ring{--pct:0; width:60px; height:60px; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .ring::before{
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(var(--ring-color) calc(var(--pct)*1%), var(--line) 0);
+    -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+            mask:radial-gradient(farthest-side, transparent calc(100% - 7px), #000 calc(100% - 6px));
+    transition:background 0.4s ease;
+  }
+  .ring span{position:relative; font-family:'JetBrains Mono'; font-size:0.64rem; font-weight:700;}
+  .op-card.bnd .ring{--ring-color:var(--red);}
+  .op-card.dd .ring{--ring-color:var(--doom);}
+  .ring-label{font-family:'JetBrains Mono'; font-size:0.5rem; color:var(--dim); letter-spacing:0.15em; text-align:center; margin-top:0.3rem;}
+
+  /* ============ TABS ============ */
+  .tabs{
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,12,20,0.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    display:flex; justify-content:center; gap:0.9rem; padding:0.8rem 1rem;
+  }
+  .tab-btn{
+    background:transparent; border:2px solid var(--line); color:var(--dim);
+    font-family:'Bangers'; font-size:1rem; letter-spacing:0.1em;
+    padding:0.45rem 1.5rem 0.35rem; cursor:pointer;
+    transform:skew(-8deg); transition:all 0.18s ease;
+  }
+  .tab-btn span{display:inline-block; transform:skew(8deg);}
+  .tab-btn:hover{color:#fff; border-color:var(--dim);}
+  .tab-btn.active.bnd{background:var(--red); border-color:var(--red); color:#fff; box-shadow:3px 3px 0 rgba(0,0,0,0.6);}
+  .tab-btn.active.dd{background:var(--doom); border-color:var(--doom); color:#03130b; box-shadow:3px 3px 0 rgba(0,0,0,0.6);}
+
+  /* ============ SECTIONS ============ */
+  .operation{max-width:1480px; margin:0 auto; padding:2.6rem 1.2rem 4rem; display:none;}
+  .operation.visible{display:block; animation:sectionIn 0.4s ease;}
+  @keyframes sectionIn{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .op-header{position:relative; padding-bottom:1.4rem;}
+  .op-header .file-no{font-family:'JetBrains Mono'; font-size:0.64rem; color:var(--dim); letter-spacing:0.25em;}
+  .op-header h2{font-family:'Bangers'; font-size:clamp(2rem, 6vw, 3rem); margin-top:0.4rem; color:#fff; line-height:1;}
+  .op-header.bnd h2{text-shadow:3px 3px 0 var(--red-dark);}
+  .op-header.dd h2{text-shadow:3px 3px 0 var(--doom-dark);}
+  .op-header p{color:var(--dim); font-size:0.94rem; margin-top:0.9rem; max-width:70ch;}
+
+  .hud{display:flex; gap:1rem; flex-wrap:wrap; align-items:stretch; margin-top:0.4rem;}
+  .caption-box{
+    flex:2; min-width:280px;
+    background:#fdf3d0; color:#241c05;
+    border:2px solid #000; box-shadow:5px 5px 0 rgba(0,0,0,0.5);
+    padding:0.8rem 1rem; font-size:0.84rem; font-weight:500;
+    transform:rotate(-0.4deg);
+  }
+  .caption-box .tag{font-family:'Bangers'; letter-spacing:0.08em; color:var(--red); margin-right:0.4rem;}
+  .caption-box i{width:10px; height:10px; display:inline-block; margin:0 0.3rem 0 0.7rem; transform:rotate(45deg) translateY(1px); border:1.5px solid #000;}
+
+  .progress-wrap{
+    flex:3; min-width:300px;
+    background:var(--panel); border:2px solid #000;
+    box-shadow:4px 4px 0 rgba(0,0,0,0.5); padding:0.9rem 1.1rem;
+  }
+  .progress-label{display:flex; justify-content:space-between; align-items:baseline; font-family:'JetBrains Mono'; font-size:0.66rem; color:var(--dim); margin-bottom:0.55rem; letter-spacing:0.08em;}
+  .rank{font-family:'Bangers'; font-size:1rem; color:var(--gold); letter-spacing:0.08em;}
+  .progress-track{height:14px; background:#0a0d18; border:1px solid var(--line); overflow:hidden;}
+  .progress-fill{
+    height:100%; width:0%;
+    background:repeating-linear-gradient(-45deg, var(--red), var(--red) 10px, #ff4d52 10px, #ff4d52 20px);
+    background-size:28px 28px;
+    transition:width 0.5s cubic-bezier(.2,.9,.3,1.2);
+    animation:stripes 1.2s linear infinite;
+    box-shadow:0 0 12px rgba(230,36,41,0.6);
+  }
+  .progress-fill.full{
+    background:repeating-linear-gradient(-45deg, var(--gold), var(--gold) 10px, #ffd35e 10px, #ffd35e 20px);
+    background-size:28px 28px;
+    box-shadow:0 0 16px rgba(240,179,35,0.8);
+  }
+  @keyframes stripes{from{background-position:0 0;} to{background-position:28px 0;}}
+
+  .filters{display:flex; gap:0.55rem; margin-top:1.1rem; flex-wrap:wrap; align-items:center;}
+  .filter-btn{
+    background:transparent; border:2px solid var(--line); color:var(--dim);
+    font-family:'JetBrains Mono'; font-size:0.62rem; letter-spacing:0.05em;
+    padding:0.5rem 0.9rem; cursor:pointer; transition:all 0.15s ease;
+  }
+  .filter-btn.active{background:var(--gold); color:#241c05; border-color:var(--gold); font-weight:700; box-shadow:3px 3px 0 rgba(0,0,0,0.55);}
+  .filter-btn:hover:not(.active){color:#fff; border-color:var(--dim);}
+  .map-hint{margin-left:auto; font-family:'JetBrains Mono'; font-size:0.6rem; letter-spacing:0.12em; color:var(--dim); animation:pulse 2.5s ease-in-out infinite;}
+
+  /* ============ THE WEB MAP ============ */
+  .map-frame{
+    margin-top:1rem; border:3px solid #000; box-shadow:8px 8px 0 rgba(0,0,0,0.55);
+    background:
+      repeating-radial-gradient(circle at 20% 30%, transparent 0 52px, rgba(255,255,255,0.022) 52px 54px),
+      repeating-radial-gradient(circle at 80% 70%, transparent 0 64px, rgba(255,255,255,0.018) 64px 66px),
+      radial-gradient(800px 400px at 50% 0%, rgba(230,36,41,0.05), transparent 70%),
+      #0C0F1C;
+    overflow:auto; position:relative;
+    cursor:grab; -webkit-overflow-scrolling:touch;
+  }
+  .map-frame.dragging{cursor:grabbing; user-select:none;}
+  .map-canvas{position:relative;}
+  .map-canvas svg{position:absolute; inset:0; pointer-events:none;}
+
+  .edge{
+    fill:none; stroke:var(--line); stroke-width:2.5;
+    stroke-dasharray:1; stroke-dashoffset:1;
+    animation:edgeDraw 0.9s ease forwards;
+    transition:stroke 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+  }
+  @keyframes edgeDraw{to{stroke-dashoffset:0;}}
+  .edge.lit{stroke:var(--cleared); filter:drop-shadow(0 0 4px rgba(47,191,113,0.7));}
+  .edge.dimmed{opacity:0.12;}
+
+  .thread-tag{
+    position:absolute; transform:translateY(-50%);
+    font-family:'Bangers'; font-size:0.95rem; color:var(--gold); letter-spacing:0.06em;
+    text-shadow:2px 2px 0 rgba(0,0,0,0.7); white-space:nowrap; pointer-events:none;
+  }
+  .thread-tag small{display:block; font-family:'JetBrains Mono'; font-size:0.56rem; color:var(--dim); letter-spacing:0.1em; margin-top:0.1rem;}
+
+  .node{
+    position:absolute; transform:translate(-50%,-50%);
+    width:62px; height:62px; border-radius:50%;
+    background:var(--panel); border:3px solid var(--slate);
+    color:var(--text); cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform 0.15s ease, box-shadow 0.2s ease, opacity 0.3s ease, background 0.2s ease;
+    opacity:0; animation:nodePop 0.5s cubic-bezier(.2,1.4,.4,1) forwards;
+    z-index:3;
+  }
+  @keyframes nodePop{0%{opacity:0; transform:translate(-50%,-50%) scale(0.2);} 100%{opacity:1; transform:translate(-50%,-50%) scale(1);}}
+  .node:hover{transform:translate(-50%,-50%) scale(1.14); z-index:6;}
+  .node:focus-visible{outline:3px solid #fff; outline-offset:3px;}
+  .node.prio-critical{border-color:var(--red); box-shadow:0 0 0 rgba(230,36,41,0.5); animation:nodePop 0.5s cubic-bezier(.2,1.4,.4,1) forwards, critGlow 2.6s ease-in-out infinite 0.6s;}
+  @keyframes critGlow{0%,100%{box-shadow:0 0 4px rgba(230,36,41,0.25);} 50%{box-shadow:0 0 16px rgba(230,36,41,0.75);}}
+  .node.prio-recommended{border-color:var(--gold);}
+  .node.prio-optional{border-color:var(--slate); border-style:dashed;}
+  .node .node-year{font-family:'Bangers'; font-size:0.98rem; letter-spacing:0.04em; pointer-events:none;}
+  .node .node-kind{
+    position:absolute; top:-9px; right:-9px; font-size:0.7rem;
+    background:#000; border:1.5px solid var(--line); border-radius:50%;
+    width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+    pointer-events:none;
+  }
+  .node .node-label{
+    position:absolute; top:calc(100% + 7px); left:50%; transform:translateX(-50%);
+    width:148px; font-size:0.68rem; font-weight:700; text-align:center; line-height:1.2;
+    color:var(--text); pointer-events:none; text-shadow:0 2px 4px #000;
+  }
+  .node.checked{background:var(--cleared); border-color:var(--cleared); border-style:solid; animation:none; opacity:1;}
+  .node.checked .node-year{display:none;}
+  .node.checked::before{content:'✓'; font-size:1.5rem; font-weight:800; color:#03130b;}
+  .node.checked .node-label{color:var(--cleared); text-decoration:line-through;}
+  .node.selected{box-shadow:0 0 0 4px #fff, 0 0 22px rgba(255,255,255,0.5); animation:none; opacity:1; z-index:7;}
+  .node.faded{opacity:0.13 !important; pointer-events:none;}
+
+  .meganode{
+    position:absolute; transform:translate(-50%,-50%);
+    border:3px solid #000; cursor:default; z-index:4;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0.6rem 0.8rem;
+  }
+  .meganode.start{
+    width:104px; height:104px; background:var(--gold); color:#241c05; border-radius:50%;
+    box-shadow:5px 5px 0 rgba(0,0,0,0.55);
+    animation:pulse 3s ease-in-out infinite;
+  }
+  .meganode.start .big{font-family:'Bangers'; font-size:1.15rem; line-height:1;}
+  .meganode.start .small{font-family:'JetBrains Mono'; font-size:0.52rem; letter-spacing:0.1em; margin-top:0.2rem; font-weight:700;}
+  .meganode.end{
+    width:150px; min-height:150px; border-radius:10px;
+    box-shadow:6px 6px 0 rgba(0,0,0,0.55);
+    transition:box-shadow 0.4s ease;
+  }
+  .meganode.end.bnd{background:linear-gradient(160deg,#3a0d12,#1a0b10);}
+  .meganode.end.dd{background:linear-gradient(160deg,#0a2f21,#0a1512);}
+  .meganode.end .big{font-family:'Bangers'; font-size:1.25rem; line-height:1.05; color:#fff;}
+  .meganode.end.bnd .big{text-shadow:2px 2px 0 var(--red-dark);}
+  .meganode.end.dd .big{text-shadow:2px 2px 0 var(--doom-dark);}
+  .meganode.end .small{font-family:'JetBrains Mono'; font-size:0.56rem; color:var(--dim); letter-spacing:0.1em; margin-top:0.4rem;}
+  .meganode.end .ready{
+    display:none; font-family:'Bangers'; color:var(--gold); font-size:0.95rem; margin-top:0.4rem;
+    letter-spacing:0.08em;
+  }
+  .meganode.end.is-ready{box-shadow:0 0 26px rgba(240,179,35,0.75), 6px 6px 0 rgba(0,0,0,0.55);}
+  .meganode.end.is-ready .ready{display:block; animation:pulse 1.6s ease-in-out infinite;}
+
+  /* ============ DETAIL CARD ============ */
+  #detail{
+    position:fixed; right:1rem; bottom:1rem; z-index:100;
+    width:min(400px, calc(100vw - 2rem));
+    background:var(--panel); border:3px solid #000; border-left:8px solid var(--slate);
+    box-shadow:8px 8px 0 rgba(0,0,0,0.6);
+    padding:1.1rem 1.2rem 1.15rem;
+    transform:translateY(20px); opacity:0; pointer-events:none;
+    transition:all 0.25s cubic-bezier(.2,1.2,.4,1);
+  }
+  #detail.open{transform:translateY(0); opacity:1; pointer-events:auto;}
+  #detail.prio-critical{border-left-color:var(--red);}
+  #detail.prio-recommended{border-left-color:var(--gold);}
+  #detail.prio-optional{border-left-color:var(--slate);}
+  #detail .d-top{display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap; padding-right:1.6rem;}
+  #detail .d-title{font-weight:800; font-size:1.05rem; color:#fff;}
+  #detail .d-meta{font-family:'JetBrains Mono'; font-size:0.62rem; color:var(--dim);}
+  #detail .ribbon{
+    font-family:'Bangers'; font-size:0.78rem; letter-spacing:0.1em;
+    padding:0.16rem 0.7rem 0.1rem 0.55rem; color:#fff;
+    clip-path:polygon(0 0, 100% 0, 86% 100%, 0 100%);
+  }
+  #detail .ribbon.critical{background:var(--red);}
+  #detail .ribbon.recommended{background:var(--gold); color:#241c05;}
+  #detail .ribbon.optional{background:var(--slate);}
+  #detail .d-note{font-size:0.86rem; color:var(--dim); margin-top:0.6rem;}
+  #detail .d-deps{margin-top:0.6rem; padding-top:0.55rem; border-top:1px dashed var(--line); font-family:'JetBrains Mono'; font-size:0.62rem; color:var(--dim);}
+  #detail .d-deps::before{content:'🕸 ';}
+  #detail .d-actions{margin-top:0.9rem; display:flex; gap:0.6rem;}
+  #detail .watch-btn{
+    flex:1; background:var(--cleared); color:#03130b; border:2px solid #000;
+    font-family:'Bangers'; font-size:1rem; letter-spacing:0.08em; padding:0.5rem 0.8rem 0.4rem;
+    cursor:pointer; box-shadow:3px 3px 0 rgba(0,0,0,0.55); transition:transform 0.12s ease;
+  }
+  #detail .watch-btn:hover{transform:translate(-1px,-1px);}
+  #detail .watch-btn.undo{background:var(--panel-hi); color:var(--text);}
+  #detail .d-close{
+    position:absolute; top:0.45rem; right:0.5rem; background:none; border:none; color:var(--dim);
+    font-size:1.15rem; cursor:pointer; line-height:1;
+  }
+  #detail .d-close:hover{color:#fff;}
+
+  footer{
+    max-width:1180px; margin:0 auto; padding:2.2rem 1.4rem 4.2rem;
+    border-top:1px solid var(--line); color:var(--dim); font-size:0.78rem;
+  }
+  footer .excelsior{font-family:'Bangers'; font-size:1.3rem; color:var(--gold); letter-spacing:0.06em; margin-bottom:0.5rem;}
+  footer .reset-btn{
+    background:transparent; border:2px solid var(--line); color:var(--dim);
+    padding:0.55rem 1.1rem; cursor:pointer; font-family:'JetBrains Mono'; font-size:0.66rem; margin-top:1.1rem;
+    transition:all 0.15s ease;
+  }
+  footer .reset-btn:hover{color:#fff; border-color:var(--red); box-shadow:3px 3px 0 rgba(230,36,41,0.4);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; animation:none !important; scroll-behavior:auto !important;}
+    #splash{display:none;}
+    .node,.edge{opacity:1; stroke-dashoffset:0;}
+  }
+</style>
+</head>
+<body>
+
+<div id="splash" title="Click to skip">
+  <div class="flick"><span>M</span><span>C</span><span>U</span></div>
+  <div class="sub-line">Mission Map · Assemble</div>
+  <div class="skip mono">CLICK TO SKIP</div>
+</div>
+
+<div class="hero">
+  <div class="halftone"></div>
+  <span class="burst-word b1 bangers">THWIP!</span>
+  <span class="burst-word b2 bangers">SNAP!</span>
+  <span class="burst-word b3 bangers">BAMF!</span>
+  <span class="burst-word b4 bangers">DOOM!</span>
+
+  <div class="hero-inner">
+    <div class="marvel-plate"><span>PHASE SIX · MISSION MAP</span></div>
+    <h1>THE ROAD TO <em>DOOMSDAY</em></h1>
+    <p class="sub">Not a checklist — a <b>web</b>. Every movie and show is a node on the map below, chained to what it sets up. Follow each thread from <b>START</b> to the premiere. Tap a node to read why it matters and mark it watched — cleared paths light up <b style="color:var(--cleared)">green</b> as you go.</p>
+
+    <div class="stones" aria-hidden="true">
+      <span class="stone s1" data-name="POWER"></span>
+      <span class="stone s2" data-name="SPACE"></span>
+      <span class="stone s3" data-name="REALITY"></span>
+      <span class="stone s4" data-name="SOUL"></span>
+      <span class="stone s5" data-name="TIME"></span>
+      <span class="stone s6" data-name="MIND"></span>
+    </div>
+
+    <div class="op-picker">
+      <button class="op-card bnd" data-target="bnd">
+        <div class="cover-dots"></div>
+        <div class="issue-box">ISSUE<br>#01</div>
+        <div class="op-num">MISSION 01 · WEB OF NEW YORK</div>
+        <h2>SPIDER-MAN:<br>BRAND NEW DAY</h2>
+        <div class="op-date">IN THEATERS · JUL 31, 2026</div>
+        <div class="op-card-bottom">
+          <div>
+            <div class="countdown" id="cd-bnd">—</div>
+            <span class="cd-label">UNTIL PREMIERE</span>
+          </div>
+          <div>
+            <div class="ring" id="ring-bnd"><span id="ring-bnd-text">0%</span></div>
+            <div class="ring-label">MISSION READY</div>
+          </div>
+        </div>
+      </button>
+
+      <button class="op-card dd" data-target="dd">
+        <div class="cover-dots"></div>
+        <div class="issue-box">ISSUE<br>#02</div>
+        <div class="op-num">MISSION 02 · LATVERIA RISING</div>
+        <h2>AVENGERS:<br>DOOMSDAY</h2>
+        <div class="op-date">IN THEATERS · DEC 18, 2026</div>
+        <div class="op-card-bottom">
+          <div>
+            <div class="countdown" id="cd-dd">—</div>
+            <span class="cd-label">UNTIL PREMIERE</span>
+          </div>
+          <div>
+            <div class="ring" id="ring-dd"><span id="ring-dd-text">0%</span></div>
+            <div class="ring-label">MISSION READY</div>
+          </div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn bnd active" data-tab="bnd"><span>BRAND NEW DAY</span></button>
+  <button class="tab-btn dd" data-tab="dd"><span>DOOMSDAY</span></button>
+</div>
+
+<section class="operation visible" id="section-bnd"></section>
+<section class="operation" id="section-dd"></section>
+
+<div id="detail" role="dialog" aria-label="Title details">
+  <button class="d-close" id="d-close" aria-label="Close">✕</button>
+  <div class="d-top">
+    <span class="d-title" id="d-title"></span>
+    <span class="d-meta" id="d-meta"></span>
+    <span class="ribbon" id="d-ribbon"></span>
+  </div>
+  <div class="d-note" id="d-note"></div>
+  <div class="d-deps" id="d-deps"></div>
+  <div class="d-actions">
+    <button class="watch-btn" id="d-watch">MARK AS WATCHED!</button>
+  </div>
+</div>
+
+<footer>
+  <div class="excelsior">EXCELSIOR!</div>
+  <div>Casting and release dates reflect the latest confirmed reporting and are subject to change. Your checkmarks are saved automatically in this browser. This is an unofficial fan guide.</div>
+  <button class="reset-btn" id="reset-btn">⟲ RESET ALL CHECKMARKS</button>
+</footer>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'mcu-prep:watched';
+  let watched = {};
+  let selected = null; // {scope, item}
+
+  /* ---------- Splash ---------- */
+  const splash = document.getElementById('splash');
+  splash.addEventListener('click', function(){ splash.classList.add('done'); });
+  setTimeout(function(){ if(splash.parentNode) splash.remove(); }, 3500);
+
+  /* ---------- DATA ---------- */
+  const DATA = {
+    bnd:{
+      title:'Spider‑Man: Brand New Day',
+      file:'FILE 01 / MISSION: BRAND NEW DAY',
+      accent:'bnd',
+      endBig:'SPIDER-MAN: BRAND NEW DAY',
+      endDate:'JUL 31 · 2026',
+      blurb:'Picks up right after No Way Home: Peter lives alone in a New York that\'s forgotten him — no Avengers safety net, no Tony Stark. Four story threads spin into it. Scroll the map sideways and follow each strand.',
+      threads:[
+        { name:'PETER\'S IDENTITY ARC', sub:'BUILDS TO NO WAY HOME', items:[
+          {id:'iron-man', title:'Iron Man', meta:'FILM', year:2008, kind:'🎬', priority:'optional', note:'Origin of Tony Stark — not required, but this is where the mentor figure who shapes Peter\'s whole arc begins.'},
+          {id:'civil-war', title:'Captain America: Civil War', meta:'FILM', year:2016, kind:'🎬', priority:'optional', note:'Peter\'s MCU debut — Tony recruits him. Background flavor only.'},
+          {id:'homecoming', title:'Spider‑Man: Homecoming', meta:'FILM', year:2017, kind:'🎬', priority:'recommended', note:'Establishes the Tony/Peter mentor dynamic, introduces Damage Control (central to BND) and Mac Gargan/Scorpion, who returns.', deps:'Builds on: Iron Man, Civil War (both optional)'},
+          {id:'endgame', title:'Avengers: Endgame', meta:'FILM', year:2019, kind:'🎬', priority:'recommended', note:'Tony\'s death is the emotional backbone behind BND\'s premise — no mentor, no safety net, Peter fully on his own. (Infinity War deepens it further, optionally.)'},
+          {id:'far-from-home', title:'Spider‑Man: Far From Home', meta:'FILM', year:2019, kind:'🎬', priority:'critical', note:'Ends with Mysterio publicly revealing Peter\'s identity to the world — the literal opening event of No Way Home. Not skippable.', deps:'Builds on: Homecoming (recommended)'},
+          {id:'no-way-home', title:'Spider‑Man: No Way Home', meta:'FILM', year:2021, kind:'🎬', priority:'critical', note:'The direct, immediate predecessor. Ends with the entire world forgetting Peter Parker exists — exactly where Brand New Day starts. (Watch Doctor Strange 2016 first for the magic to land.)', deps:'Requires: Far From Home · Helps: Doctor Strange, Endgame'}
+        ]},
+        { name:'KINGPIN\'S NEW YORK', sub:'THE NYC STATUS QUO', items:[
+          {id:'daredevil-netflix', title:'Daredevil', meta:'SERIES', year:2015, kind:'📺', priority:'optional', note:'Deep background on Matt Murdock vs. Wilson Fisk, if you want the full history. (The Punisher series deepens Frank Castle further.)'},
+          {id:'born-again-s1', title:'Daredevil: Born Again — S1', meta:'SERIES', year:2025, kind:'📺', priority:'recommended', note:'Fisk becomes Mayor of NYC and turns on vigilantes — the status quo Brand New Day picks up in.'},
+          {id:'born-again-s2', title:'Daredevil: Born Again — S2', meta:'SERIES', year:2026, kind:'📺', priority:'critical', note:'Resolves Fisk\'s fate and the resurgent Hand storyline. Frank Castle\'s arc here carries straight into his role in BND.', deps:'Builds on: Born Again S1 (recommended)'}
+        ]},
+        { name:'BANNER\'S LAST CHAPTER', sub:'TWO EPISODES, THAT\'S IT', items:[
+          {id:'she-hulk', title:'She‑Hulk — Eps. 1 &amp; 9 only', meta:'SERIES', year:2022, kind:'📺', priority:'critical', note:'Covers Banner\'s most recent developments before BND. Skip the rest of the season — it\'s Jennifer Walters\' story.'}
+        ]},
+        { name:'YELENA\'S DETOUR', sub:'HER SURPRISE CAMEO, EXPLAINED', items:[
+          {id:'black-widow', title:'Black Widow', meta:'FILM', year:2021, kind:'🎬', priority:'optional', note:'Yelena\'s introduction and the full context of Natasha\'s past.'},
+          {id:'hawkeye', title:'Hawkeye', meta:'SERIES', year:2021, kind:'📺', priority:'optional', note:'Yelena learns the truth about Natasha\'s death and targets Clint — deepens her character.'},
+          {id:'thunderbolts-bnd', title:'Thunderbolts*', meta:'FILM', year:2025, kind:'🎬', priority:'recommended', note:'Yelena joins the "New Avengers" and finds new purpose — directly precedes her confirmed cameo in Brand New Day.', deps:'Builds on: Black Widow, Hawkeye (both optional)'}
+        ]}
+      ]
+    },
+    dd:{
+      title:'Avengers: Doomsday',
+      file:'FILE 02 / MISSION: DOOMSDAY',
+      accent:'dd',
+      endBig:'AVENGERS: DOOMSDAY',
+      endDate:'DEC 18 · 2026',
+      blurb:'The Multiverse Saga\'s penultimate movie — Avengers, Wakandans, the New Avengers, the Fantastic Four, and the X‑Men all collide with Doctor Doom. Seven strands feed the web. Do the minimum (red nodes) or the maximum (everything).',
+      threads:[
+        { name:'ORIGINAL AVENGERS', sub:'BASELINE TEAM STATUS', items:[
+          {id:'avengers-1', title:'The Avengers', meta:'FILM', year:2012, kind:'🎬', priority:'optional', note:'The team\'s first assembly — nice grounding, not required for Doomsday specifically. (Age of Ultron and the Ant‑Man films are similar optional background.)'},
+          {id:'infinity-war-2', title:'Avengers: Infinity War', meta:'FILM', year:2018, kind:'🎬', priority:'recommended', note:'Sets the scale of an "Avengers-level threat" — useful baseline for Doomsday\'s stakes.'},
+          {id:'endgame-2', title:'Avengers: Endgame', meta:'FILM', year:2019, kind:'🎬', priority:'critical', note:'Old Steve Rogers\' ending here is the direct explanation for his teased, surprise return in Doomsday.'},
+          {id:'love-thunder', title:'Thor: Love and Thunder', meta:'FILM', year:2022, kind:'🎬', priority:'recommended', note:'Thor\'s current status quo, plus the introduction of his daughter Love — confirmed to appear in Doomsday.'}
+        ]},
+        { name:'MULTIVERSE &amp; DOOM', sub:'THE MOST IMPORTANT STRAND', items:[
+          {id:'loki-s1', title:'Loki — Season 1', meta:'SERIES', year:2021, kind:'📺', priority:'critical', note:'Loki survives via Endgame\'s time travel and is swept into the TVA. Introduces the Sacred Timeline that Doomsday is built on.'},
+          {id:'loki-s2', title:'Loki — Season 2', meta:'SERIES', year:2023, kind:'📺', priority:'critical', note:'Loki becomes keeper of the branching timelines. Flagged by multiple insiders as the single most important pre-Doomsday watch.', deps:'Builds on: Loki S1 (critical)'},
+          {id:'strange-2', title:'Dr. Strange: Multiverse of Madness', meta:'FILM', year:2022, kind:'🎬', priority:'critical', note:'First real multiverse excursion. Introduces the Illuminati and Patrick Stewart\'s Professor X — a direct bridge to the X‑Men strand.'},
+          {id:'quantumania', title:'Ant‑Man 3: Quantumania', meta:'FILM', year:2023, kind:'🎬', priority:'recommended', note:'Kang was recast as Doom, but this still shows how a timeline-spanning MCU villain operates. (What If...? S2–3 adds optional multiverse texture.)'}
+        ]},
+        { name:'THE NEW AVENGERS', sub:'DIRECT POST-CREDITS TIE-INS', items:[
+          {id:'falcon-ws', title:'The Falcon and the Winter Soldier', meta:'SERIES', year:2021, kind:'📺', priority:'recommended', note:'Sam Wilson takes up the shield — sets up his arc into Brave New World and his New Avengers leadership. (The Winter Soldier film is optional deep background.)'},
+          {id:'thunderbolts', title:'Thunderbolts*', meta:'FILM', year:2025, kind:'🎬', priority:'critical', note:'This ragtag team rebrands into the "New Avengers" seen in Doomsday — its post-credits scene ties directly in.'},
+          {id:'brave-new-world', title:'Captain America: Brave New World', meta:'FILM', year:2025, kind:'🎬', priority:'critical', note:'Sam Wilson is confirmed to hold a leadership role in Doomsday — this is where that status is established.'}
+        ]},
+        { name:'FANTASTIC FOUR', sub:'ANOTHER UNIVERSE JOINS OURS', items:[
+          {id:'ff-first-steps', title:'The Fantastic Four: First Steps', meta:'FILM', year:2025, kind:'🎬', priority:'critical', note:'Origin of the team who cross into the main MCU timeline. Its post-credits scene is a direct link to Doomsday.'}
+        ]},
+        { name:'X-MEN FOLD IN', sub:'25 YEARS OF FOX MUTANTS', items:[
+          {id:'xmen-trilogy', title:'X‑Men Original Trilogy', meta:'FILMS', year:2000, kind:'🎬', priority:'optional', note:'Background on Professor X, Magneto, Cyclops and co. Skippable if already familiar with Fox\'s X‑Men.'},
+          {id:'dofp', title:'X‑Men: Days of Future Past', meta:'FILM', year:2014, kind:'🎬', priority:'recommended', note:'Rewrote the original trilogy\'s ending — important context for how these mutants can still exist heading into Doomsday.'},
+          {id:'logan', title:'Logan', meta:'FILM', year:2017, kind:'🎬', priority:'optional', note:'Wolverine\'s original "ending" — good to know since Deadpool &amp; Wolverine directly undercuts it.'},
+          {id:'deadpool-wolverine', title:'Deadpool &amp; Wolverine', meta:'FILM', year:2024, kind:'🎬', priority:'critical', note:'Officially folds the Fox X‑Men multiverse into the MCU proper — the direct bridge to seeing this cast in Doomsday.', deps:'Helps: Days of Future Past, Logan'}
+        ]},
+        { name:'STREET &amp; COSMIC', sub:'THE REST OF THE ROSTER', items:[
+          {id:'shang-chi', title:'Shang‑Chi', meta:'FILM', year:2021, kind:'🎬', priority:'recommended', note:'Introduces Shang‑Chi and the Ten Rings organization; mid‑credits scene ties him to the wider Avengers world.'},
+          {id:'wakanda-forever', title:'Black Panther: Wakanda Forever', meta:'FILM', year:2022, kind:'🎬', priority:'recommended', note:'Wakanda\'s current status and the new Black Panther — both expected to factor into Doomsday.'},
+          {id:'the-marvels', title:'The Marvels', meta:'FILM', year:2023, kind:'🎬', priority:'recommended', note:'Mostly skippable, except: its post-credits scene sends Monica Rambeau into a world with the X‑Men\'s Beast — a direct seed for Doomsday. (Ms. Marvel series is optional context.)'}
+        ]},
+        { name:'THE IMMEDIATE RUN-UP', sub:'RELEASING RIGHT BEFORE', items:[
+          {id:'ironheart', title:'Ironheart', meta:'SERIES', year:2025, kind:'📺', priority:'recommended', note:'Introduces Riri Williams, who\'s expected to appear in Doomsday.'},
+          {id:'bnd-in-dd', title:'Spider‑Man: Brand New Day', meta:'FILM', year:2026, kind:'🎬', priority:'critical', note:'The direct lead-in — releases less than five months before Doomsday. See Mission 01 for its own full watch chain.'},
+          {id:'visionquest', title:'VisionQuest', meta:'SERIES', year:2026, kind:'📺', priority:'recommended', note:'Vision‑centered series expected to feed directly into Doomsday.'}
+        ]}
+      ]
+    }
+  };
+
+  const RANKS = [[0,'CIVILIAN'],[1,'RECRUIT'],[40,'S.H.I.E.L.D. AGENT'],[70,'AVENGER'],[100,'WORTHY ⚡']];
+  function rankFor(pct){ let r=RANKS[0][1]; RANKS.forEach(function(p){ if(pct>=p[0]) r=p[1]; }); return r; }
+
+  const itemsById = {};
+  const criticalIds = {bnd:[], dd:[]};
+  const edgesByScope = {bnd:[], dd:[]};
+  ['bnd','dd'].forEach(function(k){
+    DATA[k].threads.forEach(function(t){ t.items.forEach(function(it){
+      itemsById[it.id] = it;
+      if(it.priority==='critical') criticalIds[k].push(it.id);
+    });});
+  });
+
+  /* ---------- BUILD SECTIONS + MAPS ---------- */
+  function esc(s){ return s.replace(/"/g,'&quot;'); }
+
+  function buildSection(key){
+    const op = DATA[key];
+    const el = document.getElementById('section-'+key);
+    const critTotal = criticalIds[key].length;
+
+    let html = '';
+    html += '<div class="op-header '+op.accent+'"><div class="file-no">'+op.file+'</div><h2>'+op.title+'</h2><p>'+op.blurb+'</p></div>';
+
+    html += '<div class="hud">';
+    html += '<div class="caption-box"><span class="tag">READ THE MAP:</span>'+
+      '<i style="background:var(--red)"></i><b>Critical</b> — plot won\'t make sense without it.'+
+      '<i style="background:var(--gold)"></i><b>Recommended</b> — fills a real gap.'+
+      '<i style="background:var(--slate)"></i><b>Optional</b> (dashed) — flavor only.'+
+      ' Tap any node for the why.</div>';
+    html += '<div class="progress-wrap">'+
+      '<div class="progress-label"><span>CRITICAL NODES CLEARED&nbsp;·&nbsp;<span class="mono" id="prog-text-'+key+'">0 / '+critTotal+'</span></span>'+
+      '<span class="rank" id="rank-'+key+'">CIVILIAN</span></div>'+
+      '<div class="progress-track"><div class="progress-fill" id="prog-fill-'+key+'"></div></div></div>';
+    html += '</div>';
+
+    html += '<div class="filters" data-scope="'+key+'">'+
+      '<button class="filter-btn active" data-filter="all">Full web</button>'+
+      '<button class="filter-btn" data-filter="crit-rec">Critical + Recommended</button>'+
+      '<button class="filter-btn" data-filter="crit">Critical path only</button>'+
+      '<span class="map-hint">⇄ DRAG THE MAP TO EXPLORE</span>'+
+    '</div>';
+
+    html += '<div class="map-frame" id="frame-'+key+'"><div class="map-canvas" id="canvas-'+key+'"></div></div>';
+    el.innerHTML = html;
+
+    buildMap(key);
+  }
+
+  function buildMap(key){
+    const op = DATA[key];
+    const canvas = document.getElementById('canvas-'+key);
+    const rows = op.threads.length;
+    const maxLen = Math.max.apply(null, op.threads.map(function(t){return t.items.length;}));
+    const COLW = 172, ROWH = 158, X0 = 250, Y0 = 130;
+    const W = X0 + maxLen*COLW + 130;
+    const H = Y0 + (rows-1)*ROWH + 130;
+    const cy = H/2;
+    const startX = 92, endX = X0 + (maxLen-1)*COLW + 190;
+
+    canvas.style.width = (endX+120) + 'px';
+    canvas.style.height = H + 'px';
+
+    // positions
+    const pos = {};
+    op.threads.forEach(function(t, ri){
+      t.items.forEach(function(it, ci){
+        pos[it.id] = {x: X0 + ci*COLW, y: Y0 + ri*ROWH};
+      });
+    });
+
+    // edges svg
+    let svg = '<svg width="'+(endX+120)+'" height="'+H+'" viewBox="0 0 '+(endX+120)+' '+H+'" xmlns="http://www.w3.org/2000/svg">';
+    let edgeDefs = [];
+    function edge(x1,y1,x2,y2,from,to,delay,prio){
+      const mx = (x1+x2)/2;
+      const d = 'M '+x1+' '+y1+' C '+mx+' '+y1+', '+mx+' '+y2+', '+x2+' '+y2;
+      edgeDefs.push({from:from, to:to, prio:prio});
+      return '<path class="edge" pathLength="1" d="'+d+'" style="animation-delay:'+delay+'s" data-from="'+from+'" data-to="'+to+'" data-prio="'+prio+'"/>';
+    }
+    op.threads.forEach(function(t, ri){
+      const rowY = Y0 + ri*ROWH;
+      // start -> first
+      const first = t.items[0];
+      svg += edge(startX+52, cy, pos[first.id].x-34, rowY, 'START', first.id, 0.1, first.priority);
+      // chain
+      for(let i=0;i<t.items.length-1;i++){
+        const a=t.items[i], b=t.items[i+1];
+        svg += edge(pos[a.id].x+34, rowY, pos[b.id].x-34, rowY, a.id, b.id, 0.25+i*0.12, b.priority);
+      }
+      // last -> end
+      const last = t.items[t.items.length-1];
+      svg += edge(pos[last.id].x+34, rowY, endX-80, cy, last.id, 'END', 0.4+t.items.length*0.12, last.priority);
+    });
+    svg += '</svg>';
+
+    let html = svg;
+
+    // thread tags
+    op.threads.forEach(function(t, ri){
+      const rowY = Y0 + ri*ROWH;
+      html += '<div class="thread-tag" style="left:'+(X0-70)+'px; top:'+(rowY-58)+'px">'+t.name+'<small>'+t.sub+'</small></div>';
+    });
+
+    // start + end meganodes
+    html += '<div class="meganode start" style="left:'+startX+'px; top:'+cy+'px"><span class="big">START<br>HERE</span><span class="small">'+(key==='bnd'?'4 THREADS':'7 THREADS')+'</span></div>';
+    html += '<div class="meganode end '+key+'" id="end-'+key+'" style="left:'+endX+'px; top:'+cy+'px">'+
+      '<span class="big">'+op.endBig+'</span><span class="small">'+op.endDate+'</span><span class="ready">★ MISSION READY! ★</span></div>';
+
+    // nodes
+    op.threads.forEach(function(t, ri){
+      t.items.forEach(function(it, ci){
+        const p = pos[it.id];
+        html += '<button class="node prio-'+it.priority+'" data-id="'+it.id+'" data-scope="'+key+'" '+
+          'style="left:'+p.x+'px; top:'+p.y+'px; animation-delay:'+(0.15+ci*0.1+ri*0.05)+'s" '+
+          'aria-label="'+esc(it.title)+'">'+
+          '<span class="node-kind">'+it.kind+'</span>'+
+          '<span class="node-year">'+it.year+'</span>'+
+          '<span class="node-label">'+it.title+'</span>'+
+        '</button>';
+      });
+    });
+
+    canvas.innerHTML = html;
+    edgesByScope[key] = Array.prototype.slice.call(canvas.querySelectorAll('.edge'));
+  }
+
+  buildSection('bnd');
+  buildSection('dd');
+
+  /* ---------- STORAGE ---------- */
+  function loadWatched(){
+    try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) watched = JSON.parse(raw) || {}; }
+    catch(e){ watched = {}; }
+    render();
+  }
+  function saveWatched(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(watched)); }catch(e){} }
+
+  /* ---------- RENDER STATE ---------- */
+  function render(){
+    document.querySelectorAll('.node').forEach(function(n){
+      n.classList.toggle('checked', !!watched[n.dataset.id]);
+    });
+    ['bnd','dd'].forEach(function(scope){
+      edgesByScope[scope].forEach(function(e){
+        const f = e.dataset.from, t = e.dataset.to;
+        const fOk = (f==='START') || !!watched[f];
+        const tOk = (t==='END') ? fOk : !!watched[t];
+        e.classList.toggle('lit', fOk && tOk && (t!=='END' || !!watched[f]));
+      });
+      updateProgress(scope);
+    });
+  }
+
+  function updateProgress(scope){
+    const ids = criticalIds[scope];
+    const total = ids.length;
+    let done = 0;
+    ids.forEach(function(id){ if(watched[id]) done++; });
+    const pct = total ? Math.round((done/total)*100) : 0;
+    const fill = document.getElementById('prog-fill-'+scope);
+    const text = document.getElementById('prog-text-'+scope);
+    const ring = document.getElementById('ring-'+scope);
+    const ringText = document.getElementById('ring-'+scope+'-text');
+    const rank = document.getElementById('rank-'+scope);
+    const end = document.getElementById('end-'+scope);
+    if(fill){ fill.style.width = pct+'%'; fill.classList.toggle('full', pct===100); }
+    if(text) text.textContent = done+' / '+total;
+    if(ring) ring.style.setProperty('--pct', pct);
+    if(ringText) ringText.textContent = pct+'%';
+    if(rank) rank.textContent = rankFor(pct);
+    if(end) end.classList.toggle('is-ready', pct===100);
+  }
+
+  /* ---------- DETAIL CARD ---------- */
+  const detail = document.getElementById('detail');
+  function openDetail(scope, id){
+    const it = itemsById[id];
+    if(!it) return;
+    selected = {scope:scope, id:id};
+    detail.className = 'open prio-'+it.priority;
+    document.getElementById('d-title').innerHTML = it.title;
+    document.getElementById('d-meta').textContent = it.meta+' · '+it.year;
+    const rb = document.getElementById('d-ribbon');
+    rb.className = 'ribbon '+it.priority;
+    rb.textContent = it.priority.toUpperCase();
+    document.getElementById('d-note').innerHTML = it.note;
+    const dd = document.getElementById('d-deps');
+    if(it.deps){ dd.style.display='block'; dd.textContent = it.deps; } else { dd.style.display='none'; }
+    updateWatchBtn();
+    document.querySelectorAll('.node').forEach(function(n){ n.classList.toggle('selected', n.dataset.id===id); });
+  }
+  function closeDetail(){
+    selected = null;
+    detail.classList.remove('open');
+    document.querySelectorAll('.node.selected').forEach(function(n){ n.classList.remove('selected'); });
+  }
+  function updateWatchBtn(){
+    if(!selected) return;
+    const btn = document.getElementById('d-watch');
+    const on = !!watched[selected.id];
+    btn.textContent = on ? '↩ UNDO — NOT WATCHED YET' : '✓ MARK AS WATCHED!';
+    btn.classList.toggle('undo', on);
+  }
+  document.getElementById('d-close').addEventListener('click', closeDetail);
+  document.getElementById('d-watch').addEventListener('click', function(){
+    if(!selected) return;
+    watched[selected.id] = !watched[selected.id];
+    if(!watched[selected.id]) delete watched[selected.id];
+    render(); saveWatched(); updateWatchBtn();
+  });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDetail(); });
+
+  /* ---------- INTERACTION ---------- */
+  document.addEventListener('click', function(e){
+    const node = e.target.closest('.node');
+    if(node){ openDetail(node.dataset.scope, node.dataset.id); }
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', function(){
+    watched = {}; render(); saveWatched(); updateWatchBtn();
+  });
+
+  /* ---------- Drag-to-pan maps ---------- */
+  document.querySelectorAll('.map-frame').forEach(function(frame){
+    let down=false, sx=0, sy=0, sl=0, st=0, moved=false;
+    frame.addEventListener('pointerdown', function(e){
+      down=true; moved=false; sx=e.clientX; sy=e.clientY; sl=frame.scrollLeft; st=frame.scrollTop;
+      frame.classList.add('dragging');
+    });
+    window.addEventListener('pointermove', function(e){
+      if(!down) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy;
+      if(Math.abs(dx)>4||Math.abs(dy)>4) moved=true;
+      frame.scrollLeft = sl-dx; frame.scrollTop = st-dy;
+    });
+    window.addEventListener('pointerup', function(){ down=false; frame.classList.remove('dragging'); });
+    frame.addEventListener('click', function(e){ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
+  });
+
+  /* ---------- Tabs ---------- */
+  function setTab(name){
+    document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.tab===name); });
+    document.getElementById('section-bnd').classList.toggle('visible', name==='bnd');
+    document.getElementById('section-dd').classList.toggle('visible', name==='dd');
+    closeDetail();
+  }
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.addEventListener('click', function(){ setTab(b.dataset.tab); document.querySelector('.tabs').scrollIntoView({behavior:'smooth'}); });
+  });
+  document.querySelectorAll('.op-card').forEach(function(c){
+    c.addEventListener('click', function(){ setTab(c.dataset.target); document.querySelector('.tabs').scrollIntoView({behavior:'smooth'}); });
+  });
+
+  /* ---------- Filters (fade, keep layout) ---------- */
+  document.querySelectorAll('.filters').forEach(function(group){
+    const scope = group.dataset.scope;
+    group.querySelectorAll('.filter-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        group.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        const mode = btn.dataset.filter;
+        const canvas = document.getElementById('canvas-'+scope);
+        canvas.querySelectorAll('.node').forEach(function(n){
+          const p = n.className.match(/prio-(\w+)/)[1];
+          const fade = (mode==='crit-rec' && p==='optional') || (mode==='crit' && p!=='critical');
+          n.classList.toggle('faded', fade);
+        });
+        edgesByScope[scope].forEach(function(e){
+          const p = e.dataset.prio;
+          const fade = (mode==='crit-rec' && p==='optional') || (mode==='crit' && p!=='critical');
+          e.classList.toggle('dimmed', fade);
+        });
+      });
+    });
+  });
+
+  /* ---------- Countdown ---------- */
+  function fmtCountdown(target, el){
+    const diff = target - new Date();
+    if(diff <= 0){ el.textContent = 'IN THEATERS!'; return; }
+    const days = Math.floor(diff / 86400000);
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ el.textContent = days+' DAYS'; return; }
+    let cur = 0;
+    const step = Math.max(1, Math.ceil(days/40));
+    const iv = setInterval(function(){
+      cur += step;
+      if(cur >= days){ cur = days; clearInterval(iv); }
+      el.textContent = cur+' DAYS';
+    }, 30);
+  }
+  fmtCountdown(new Date('2026-07-31T00:00:00'), document.getElementById('cd-bnd'));
+  fmtCountdown(new Date('2026-12-18T00:00:00'), document.getElementById('cd-dd'));
+
+  loadWatched();
+})();
+</script>
+
+</body>
+</html>
